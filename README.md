@@ -13,20 +13,17 @@ All data is stored in the data folder as *.csv* or shapefiles.
 
 Shapefiles with climate divisions
 
-
 ### temperature_fig-3.csv
 
-Rates of tempetature change at the scale of climate divisions in the US, 1901-2015. Data from NOAA (2016).
+Rates of temperature change at the scale of climate divisions in the US, 1901-2015. Data from NOAA (2016).
 
 ### tree_div.csv
 
-Data from Thomson et al. (2013).
+Data from Thomson et al. (2013). 
 
 ### US_historical_deposition_rev.csv
 
 Data on nitrogen deposition is from Lamarque et al. (2013) and has been process into a shapefile by Simkin et al. (2016) and given to us by Samuel Simkin.
-
-### PCA data?
 
 ## Code
 
