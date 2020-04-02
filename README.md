@@ -1,6 +1,8 @@
 # WT_FIA
 
-Code and data for the paper *Changes in landscape-scale tree biodiversity in the northeastern United States since European settlement*.
+Code and data for the paper:
+
+Vellend, M., Thompson, J. R., Danneyrolles, V. and Rousseu, F. Changes in landscape-scale tree biodiversity in the northeastern United States since European settlement.
 
 
 ## Data
