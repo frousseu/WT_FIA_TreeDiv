@@ -10,6 +10,7 @@ library(gridExtra)
 library(gstat)
 library(nlme)
 library(ggeffects)
+library(vegan)
 
 ### set path and working directory
 # make sure all files in the data folder are in your chosen working directory
@@ -23,6 +24,19 @@ path<-"C:/Users/User/Documents/GitHub/WT_FIA_TreeDiv/data"
 
 ### data ########################################
 d <- read.csv(file.path(path,"tree_div.csv"),header=TRUE)
+
+
+### environmental PCA ###########################
+pca.input<-d[,c("clay","elevation","ph_soil","sand","ruggedness")]
+env.pca<-rda(pca.input,scale=TRUE)
+env.pca$CA$eig/env.pca$tot.chi
+scores(env.pca)$species
+biplot(env.pca,display=c("sites","species"),type=c("text","points"))
+d$envPCA1<-scores(env.pca)$sites[,1]
+d$envPCA2<-scores(env.pca)$sites[,2]
+
+
+### turn data to spatial object #################
 ds<-d
 coordinates(ds)<-~LONGITUDE+LATITUDE
 proj4string(ds)<-"+init=epsg:4326"
@@ -31,7 +45,6 @@ proj4string(ds)<-"+init=epsg:4326"
 div<-readOGR(path,"climate_div")
 div<-div[!is.na(div$ST),]
 
-#temp<-as.data.frame(fread(file.path(path,"temperature_fig-3.csv"),skip=6))
 temp<-read.csv(file.path(path,"temperature_fig-3.csv"),skip=6)
 names(temp)<-c("div","tempc")
 temp$div<-ifelse(nchar(temp$div)==5,gsub("00","0",temp$div),temp$div)
