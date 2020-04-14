@@ -23,7 +23,7 @@ Data from Thomson et al. (2013).
 
 ### US_historical_deposition_rev.csv
 
-Data on nitrogen deposition dating back to 1850 is from Lamarque et al. (2013) and has been process into a shapefile by Simkin et al. (2016) and given to us by Samuel Simkin.
+Data on nitrogen deposition dating back to 1850 is from Lamarque et al. (2013) and has been process into a shapefile by Simkin et al. (2016) and given to us by Samuel Simkin, with permission from Jean-François Lamarque.
 
 ## Code
 
