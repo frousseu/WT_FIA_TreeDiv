@@ -16,15 +16,46 @@ library(vegan)
 # make sure all files in the data folder are in your chosen working directory
 path<-getwd()
 path<-"C:/Users/User/Documents/GitHub/WT_FIA_TreeDiv/data"
+path<-"C:/Users/rouf1703/Documents/UdeS/GitHub/WT_FIA_TreeDiv/data"
 
 
 #################################################
 ### Load Data ###################################
 #################################################
 
+
 ### data ########################################
 d <- read.csv(file.path(path,"tree_div.csv"),header=TRUE)
 
+### compute diversity indices ###################
+
+dwt<-d[,names(d)[grep("_WT",names(d))]]
+dfia<-d[,names(d)[grep("_FIA",names(d))][-1]]
+
+simpson<-function(x){
+  s<-sum(x^2)
+  #s/(1-s)
+  1/s
+}
+
+shannon<-function(x){
+  s<-x[x>0]
+  exp(-sum(s*log(s)))
+}
+
+dd<-d
+
+d$Shan_fia<-apply(dfia,1,shannon)
+d$Shan_wt<-apply(dwt,1,shannon)
+d$Shan_dif<-d$Shan_fia-d$Shan_wt
+
+d$Simp_fia<-apply(dfia,1,simpson)
+d$Simp_wt<-apply(dwt,1,simpson)
+d$Simp_dif<-d$Simp_fia-d$Simp_wt
+
+vs<-c("Shan_fia","Shan_wt","Shan_dif","Simp_fia","Simp_wt","Simp_dif")
+range(as.matrix(dd[,vs])-as.matrix(d[,vs]))
+hist(as.matrix(dd[,vs])-as.matrix(d[,vs]))
 
 ### environmental PCA ###########################
 pca.input<-d[,c("clay","elevation","ph_soil","sand","ruggedness")]
@@ -34,7 +65,6 @@ scores(env.pca)$species
 biplot(env.pca,display=c("sites","species"),type=c("text","points"))
 d$envPCA1<-scores(env.pca)$sites[,1]
 d$envPCA2<-scores(env.pca)$sites[,2]
-
 
 ### turn data to spatial object #################
 ds<-d
@@ -61,7 +91,7 @@ ds<-spTransform(ds,CRS(proj4string(div)))
 n<-spTransform(n,CRS(proj4string(div)))
 
 
-#################################################
+################################################
 ### Interpolate Temperature
 #################################################
 
