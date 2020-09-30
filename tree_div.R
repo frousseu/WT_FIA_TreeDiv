@@ -26,11 +26,14 @@ path<-"C:/Users/rouf1703/Documents/UdeS/GitHub/WT_FIA_TreeDiv/data"
 
 ### data ########################################
 d <- read.csv(file.path(path,"tree_div.csv"),header=TRUE)
+d$township<-paste(d$TOWNNAME,d$STATE,sep="_")
 
-### compute diversity indices ###################
+spwt<-names(d)[grep("_WT",names(d))]
+spfia<-names(d)[grep("_FIA",names(d))][-1]
 
-dwt<-d[,names(d)[grep("_WT",names(d))]]
-dfia<-d[,names(d)[grep("_FIA",names(d))][-1]]
+setdiff(gsub("_WT","",spwt),gsub("_FIA","",spfia))
+setdiff(gsub("_FIA","",spfia),gsub("_WT","",spwt))
+intersect(gsub("_FIA","",spfia),gsub("_WT","",spwt))
 
 simpson<-function(x){
   s<-sum(x^2)
@@ -43,15 +46,113 @@ shannon<-function(x){
   exp(-sum(s*log(s)))
 }
 
+type<-"full" # c("full","alpha","trees")
+
+l<-split(d,1:nrow(d))
+l<-lapply(l,function(i){
+  iwt<-i[,spwt]
+  ifia<-i[,spfia]
+  i$alpha_wt<-sum(i[,spwt]>0)  
+  i$alpha_fia<-sum(i[,spfia]>0)
+  i$alpha_dif<-i$alpha_fia-i$alpha_wt
+  if(type=="trees" & (i$Trees_Wit!=i$Trees_FIA)){ # if the same number of trees, no resampling is done
+    w<-which.max(c(i$Trees_Wit,i$Trees_FIA))
+    n<-min(c(i$Trees_Wit,i$Trees_FIA))
+    nreps<-1000
+    if(w==1){
+      s<-lapply(1:nreps,function(j){
+        tab<-table(sample(as.factor(spwt),n,prob=as.vector(iwt),replace=TRUE))
+        tab<-tab/sum(tab)
+        c(shannon(tab),simpson(tab))
+      })
+      ss<-colMeans(do.call("rbind",s))
+      i$Shan_fia<-apply(ifia,1,shannon)
+      i$Shan_wt<-ss[1]
+      i$Shan_dif<-i$Shan_fia-i$Shan_wt
+      i$Simp_fia<-apply(ifia,1,simpson)
+      i$Simp_wt<-ss[2]
+      i$Simp_dif<-i$Simp_fia-i$Simp_wt
+    }else{
+      s<-lapply(1:nreps,function(j){
+        tab<-table(sample(as.factor(spfia),n,prob=as.vector(ifia),replace=TRUE))
+        tab<-tab/sum(tab)
+        c(shannon(tab),simpson(tab))
+      })
+      ss<-colMeans(do.call("rbind",s))
+      i$Shan_fia<-ss[1]
+      i$Shan_wt<-apply(iwt,1,shannon)
+      i$Shan_dif<-i$Shan_fia-i$Shan_wt
+      i$Simp_fia<-ss[2]
+      i$Simp_wt<-apply(iwt,1,simpson)
+      i$Simp_dif<-i$Simp_fia-i$Simp_wt
+    }
+  }else{
+    if(type=="alpha" & (i$alpha_wt!=i$alpha_fia)){ # if same alpha diversity, no resampling is done
+      w<-which.max(c(i$alpha_wt,i$alpha_fia))
+      n<-min(c(i$alpha_wt,i$alpha_fia))
+      if(w==1){
+        spsel<-names(rev(sort(i[,spwt]))[1:n])  
+        iwt<-i[,spsel]
+      }else{
+        spsel<-names(rev(sort(i[,spfia]))[1:n])
+        ifia<-i[,spsel]  
+      }
+    }
+    i$Shan_fia<-apply(ifia,1,shannon)
+    i$Shan_wt<-apply(iwt,1,shannon)
+    i$Shan_dif<-i$Shan_fia-i$Shan_wt
+    i$Simp_fia<-apply(ifia,1,simpson)
+    i$Simp_wt<-apply(iwt,1,simpson)
+    i$Simp_dif<-i$Simp_fia-i$Simp_wt
+  }
+  i
+})
+d<-do.call("rbind",l)
+hist(d$alpha_fia-d$alpha_wt)
+
+### #############################################
+
+plot(d$FIA_Plots,d$Trees_FIA)
+
+plot(d$FIA_Plots,jitter(d$alpha_fia))
+
+plot(d$FIA_Plots,jitter(d$alpha_fia-d$alpha_wt))
+
+plot(d$FIA_Plots,d$Shan_fia)
+plot(d$FIA_Plots,d$Simp_fia)
+
+ggplot(d,aes(FIA_Plots,Shan_fia))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(FIA_Plots,Simp_fia))+geom_point()+geom_smooth()+theme_bw()
+
+ggplot(d,aes(FIA_Plots,Shan_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(FIA_Plots,Simp_dif))+geom_point()+geom_smooth()+theme_bw()
+
+ggplot(d,aes(FIA_Plots,alpha_fia))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(FIA_Plots,alpha_fia))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(FIA_Plots,alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+
+ggplot(d,aes(Trees_FIA,alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(Trees_Wit,alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+
+ggplot(d,aes(log(Trees_Wit),Shan_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(log(Trees_Wit),Simp_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(log(Trees_Wit),alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+
+ggplot(d,aes(log(Trees_Wit/Trees_FIA),Shan_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(log(Trees_Wit/Trees_FIA),Simp_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(log(Trees_Wit/Trees_FIA),alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+
+ggplot(d,aes(log(Trees_Wit),Simp_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(log(Trees_Wit),peak_ag))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(peak_ag,log(Trees_Wit)))+geom_point()+geom_smooth()+theme_bw()
+cor(d$peak_ag,log(d$Trees_Wit))
+
+ggplot(d,aes(peak_ag,alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+ggplot(d,aes(log(Trees_Wit/Trees_FIA),peak_ag))+geom_point()+geom_smooth()+theme_bw()
+
+### compute diversity indices ###################
+
 dd<-d
-
-d$Shan_fia<-apply(dfia,1,shannon)
-d$Shan_wt<-apply(dwt,1,shannon)
-d$Shan_dif<-d$Shan_fia-d$Shan_wt
-
-d$Simp_fia<-apply(dfia,1,simpson)
-d$Simp_wt<-apply(dwt,1,simpson)
-d$Simp_dif<-d$Simp_fia-d$Simp_wt
 
 vs<-c("Shan_fia","Shan_wt","Shan_dif","Simp_fia","Simp_wt","Simp_dif")
 range(as.matrix(dd[,vs])-as.matrix(d[,vs]))
@@ -139,7 +240,8 @@ ds$X<-coordinates(ds)[,1]
 ds$Y<-coordinates(ds)[,2]
 
 ### variable names and scaled variable names
-v<-c("peak_ag","tempdiff_i","N_to_1984_i","Area_SqKM","envPCA1","temp_gdd")
+ds$logratio<-log(ds$Trees_Wit/ds$Trees_FIA)
+v<-c("peak_ag","tempdiff_i","N_to_1984_i","Area_SqKM","envPCA1","temp_gdd","logratio")
 vs<-paste0(v,"_sc")
 
 ### scale variables and save means and sds of unscaled variables
@@ -158,14 +260,23 @@ plot(va)
 ### models
 m_Simp<-lme(formula(paste0("Simp_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
 m_Shan<-lme(formula(paste0("Shan_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
+m_Alpha<-lme(formula(paste0("alpha_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
+#m_Alpha<-lme(alpha_dif ~ peak_ag_sc + tempdiff_i_sc + N_to_1984_i_sc + Area_SqKM_sc + envPCA1_sc + temp_gdd_sc,ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
+
+#plot(ggpredict(m_Alpha,terms="peak_ag_sc"),add=TRUE)
+#plot(ggpredict(m_Alpha,terms="logratio_sc"),add=TRUE)
+
+#plot(ggpredict(m_Shan,terms="peak_ag_sc"),add=TRUE)
+#plot(ggpredict(m_Shan,terms="logratio_sc"),add=TRUE)
 
 ### model coefficients
 as.data.frame(summary(m_Shan)$tTable)
 as.data.frame(summary(m_Simp)$tTable)
+as.data.frame(summary(m_Alpha)$tTable)
 
 ### Figure 1
 ### marginal effects and change distributions
-png(file.path(path,"peak_ag.png"),pointsize=4,width=10,height=8,units="in",res=300)
+png(file.path(path,paste0("peak_ag",paste0("_",type),"test22.png")),pointsize=4,width=10,height=8,units="in",res=300)
 
 g1<-as.data.frame(ggpredict(m_Simp,terms=c("peak_ag_sc[n=100]")))
 g1[,c("x")]<-(g1[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
@@ -214,6 +325,7 @@ g4<-ggplot(data=d,aes(Simp_dif))+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_x_continuous(breaks=seq(-8,8,by=2))+
 	annotate(geom='text',label='B',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+
 
 grid.arrange(grobs=list(g3,g4,g2,g1),ncol=2)
 dev.off()
@@ -314,5 +426,6 @@ w<-9
 segments(lx-w,ly,x1=lx+w,y1=ly,col=colsl,lwd=2,lend=2)
 text(lx+20,ly,labels=c("Historical","Contemporary","Difference (Contemporary - Historical)"),adj=c(0,0.5),cex=2)
 dev.off()
+
 
 
