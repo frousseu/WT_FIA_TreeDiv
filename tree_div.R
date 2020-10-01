@@ -46,17 +46,17 @@ shannon<-function(x){
 ### Compute Diversity Indices ###################
 #################################################
 
-# Three types of analysis can be ran (full, alpha or trees). The type has to be given here and the rest of the script up to the dissimilarity analyses will produce the different figures accordingly.
-type<-"full" # c("full","alpha","trees")
+# Three types of analysis can be ran (full, richness or trees). The type has to be given here and the rest of the script up to the dissimilarity analyses will produce the different figures accordingly.
+type<-"full" # c("full","richness","trees")
 
 # This part implements the three ways of computing indices
 l<-split(d,1:nrow(d))
 l<-lapply(l,function(i){
   iwt<-i[,spwt]
   ifia<-i[,spfia]
-  i$Alpha_wt<-sum(i[,spwt]>0)  
-  i$Alpha_fia<-sum(i[,spfia]>0)
-  i$Alpha_dif<-i$Alpha_fia-i$Alpha_wt
+  i$Rich_wt<-sum(i[,spwt]>0)  
+  i$Rich_fia<-sum(i[,spfia]>0)
+  i$Rich_dif<-i$Rich_fia-i$Rich_wt
   if(type=="trees" & (i$Trees_Wit!=i$Trees_FIA)){ # if the same number of trees, no resampling is done
     w<-which.max(c(i$Trees_Wit,i$Trees_FIA))
     n<-min(c(i$Trees_Wit,i$Trees_FIA))
@@ -74,8 +74,8 @@ l<-lapply(l,function(i){
       i$Simp_fia<-apply(ifia,1,simpson)
       i$Simp_wt<-ss[2]
       i$Simp_dif<-i$Simp_fia-i$Simp_wt
-      i$Alpha_wt<-ss[3]  
-      i$Alpha_dif<-i$Alpha_fia-i$Alpha_wt
+      i$Rich_wt<-ss[3]  
+      i$Rich_dif<-i$Rich_fia-i$Rich_wt
       
     }else{
       s<-lapply(1:nreps,function(j){
@@ -90,13 +90,13 @@ l<-lapply(l,function(i){
       i$Simp_fia<-ss[2]
       i$Simp_wt<-apply(iwt,1,simpson)
       i$Simp_dif<-i$Simp_fia-i$Simp_wt
-      i$Alpha_fia<-ss[3]  
-      i$Alpha_dif<-i$Alpha_fia-i$Alpha_wt
+      i$Rich_fia<-ss[3]  
+      i$Rich_dif<-i$Rich_fia-i$Rich_wt
     }
   }else{
-    if(type=="alpha" & (i$Alpha_wt!=i$Alpha_fia)){ # if same alpha diversity, no resampling is done
-      w<-which.max(c(i$Alpha_wt,i$Alpha_fia))
-      n<-min(c(i$Alpha_wt,i$Alpha_fia))
+    if(type=="richness" & (i$Rich_wt!=i$Rich_fia)){ # if same richness diversity, no resampling is done
+      w<-which.max(c(i$Rich_wt,i$Rich_fia))
+      n<-min(c(i$Rich_wt,i$Rich_fia))
       if(w==1){
         spsel<-names(rev(sort(i[,spwt]))[1:n])  
         iwt<-i[,spsel]
@@ -115,14 +115,14 @@ l<-lapply(l,function(i){
   i
 })
 d<-do.call("rbind",l)
-hist(d$Alpha_fia-d$Alpha_wt)
+hist(d$Rich_fia-d$Rich_wt)
 
 ### exploratory graphs ##########################
 
 # only meaningfull with type="full"
 gg1<-ggplot(d,aes(log(Trees_Wit/Trees_FIA),Shan_dif))+geom_point()+geom_smooth()+theme_bw()
 gg2<-ggplot(d,aes(log(Trees_Wit/Trees_FIA),Simp_dif))+geom_point()+geom_smooth()+theme_bw()
-gg3<-ggplot(d,aes(log(Trees_Wit/Trees_FIA),Alpha_dif))+geom_point()+geom_smooth()+theme_bw()
+gg3<-ggplot(d,aes(log(Trees_Wit/Trees_FIA),Rich_dif))+geom_point()+geom_smooth()+theme_bw()
 gg4<-ggplot(d,aes(log(Trees_Wit/Trees_FIA),peak_ag))+geom_point()+geom_smooth()+theme_bw()
 
 png(file.path(path,"div_logratio_peak_ag.png"),pointsize=4,width=10,height=8,units="in",res=300)
@@ -239,10 +239,10 @@ plot(va)
 ### models
 m_Simp<-lme(formula(paste0("Simp_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
 m_Shan<-lme(formula(paste0("Shan_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
-m_Alpha<-lme(formula(paste0("Alpha_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
+m_Rich<-lme(formula(paste0("Rich_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
 
-#plot(ggpredict(m_Alpha,terms="peak_ag_sc"),add=TRUE)
-#plot(ggpredict(m_Alpha,terms="logratio_sc"),add=TRUE)
+#plot(ggpredict(m_Rich,terms="peak_ag_sc"),add=TRUE)
+#plot(ggpredict(m_Rich,terms="logratio_sc"),add=TRUE)
 
 #plot(ggpredict(m_Shan,terms="peak_ag_sc"),add=TRUE)
 #plot(ggpredict(m_Shan,terms="logratio_sc"),add=TRUE)
@@ -251,17 +251,17 @@ m_Alpha<-lme(formula(paste0("Alpha_dif~",paste(vs,collapse="+"))),ds@data,random
 hist(resid(m_Shan))
 plot(fitted(m_Shan),resid(m_Shan))
 
-hist(resid(m_Alpha))
-plot(fitted(m_Alpha),resid(m_Alpha))
+hist(resid(m_Rich))
+plot(fitted(m_Rich),resid(m_Rich))
 
 ### model coefficients
 as.data.frame(summary(m_Shan)$tTable)
 as.data.frame(summary(m_Simp)$tTable)
-as.data.frame(summary(m_Alpha)$tTable)
+as.data.frame(summary(m_Rich)$tTable)
 
 ### Figure 1
 ### marginal effects and change distributions
-png(file.path(path,paste0("peak_ag",paste0("_",type),".png")),pointsize=4,width=10,height=ifelse(type!="alpha",12,8),units="in",res=300)
+png(file.path(path,paste0("peak_ag",paste0("_",type),".png")),pointsize=4,width=10,height=ifelse(type!="richness",12,8),units="in",res=300)
 
 g1<-as.data.frame(ggpredict(m_Simp,terms=c("peak_ag_sc[n=100]")))
 g1[,c("x")]<-(g1[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1] # rescale variables
@@ -291,15 +291,15 @@ g2<-ggplot(g2)+
 	scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
 	annotate(geom='text',label='C',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
-g3<-as.data.frame(ggpredict(m_Alpha,terms=c("peak_ag_sc[n=100]")))
+g3<-as.data.frame(ggpredict(m_Rich,terms=c("peak_ag_sc[n=100]")))
 g3[,c("x")]<-(g3[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
 g3<-ggplot(g3)+
   geom_hline(yintercept=0,linetype=2,colour=gray(0.2))+
-  geom_point(data=d,aes(peak_ag,Alpha_dif),size=1.75,alpha=0.5,colour="green4")+
+  geom_point(data=d,aes(peak_ag,Rich_dif),size=1.75,alpha=0.5,colour="green4")+
   geom_ribbon(aes(x=x,ymin=conf.low,ymax=conf.high),fill=gray(0.5,0.75))+
   geom_line(aes(x=x,y=predicted),size=1)+
   xlab("Maximum historical agriculture (proportion)")+
-  ylab("Change in Alpha diversity")+
+  ylab("Change in Richness")+
   theme_light()+
   theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
   scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
@@ -325,17 +325,17 @@ g5<-ggplot(data=d,aes(Shan_dif))+
 	scale_x_continuous(breaks=seq(-8,8,by=2))+
 	annotate(geom='text',label='D',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
-g6<-ggplot(data=d,aes(Alpha_dif))+
+g6<-ggplot(data=d,aes(Rich_dif))+
   geom_histogram(fill=gray(0.75,1),colour="grey65",breaks=seq(-8,8,by=1))+
-  geom_vline(xintercept=mean(d$Alpha_dif),size=0.7,colour="tomato")+
-  xlab("Change in Alpha diversity")+
+  geom_vline(xintercept=mean(d$Rich_dif),size=0.7,colour="tomato")+
+  xlab("Change in Richness")+
   ylab("Frequency")+
   theme_light()+
   theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
   scale_x_continuous(breaks=seq(-8,8,by=2))+
   annotate(geom='text',label='F',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
-if(type!="alpha"){
+if(type!="richness"){
   grid.arrange(grobs=list(g1,g4,g2,g5,g3,g6),ncol=2)
 }else{
   grid.arrange(grobs=list(g1,g4,g2,g5),ncol=2)
