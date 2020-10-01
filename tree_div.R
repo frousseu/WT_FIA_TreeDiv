@@ -302,11 +302,11 @@ g3<-ggplot(g3)+
   ylab("Change in Richness")+
   theme_light()+
   theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
-  scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
+  scale_y_continuous(breaks=seq(-14,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
   annotate(geom='text',label='E',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g4<-ggplot(data=d,aes(Simp_dif))+
-  geom_histogram(fill=gray(0.75,1),colour="grey65",breaks=seq(-8,8,by=1))+
+  geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
   geom_vline(xintercept=mean(d$Simp_dif),size=0.7,colour="tomato")+
   xlab("Change in Simpson diversity")+
   ylab("Frequency")+
@@ -316,7 +316,7 @@ g4<-ggplot(data=d,aes(Simp_dif))+
   annotate(geom='text',label='B',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g5<-ggplot(data=d,aes(Shan_dif))+
-	geom_histogram(fill=gray(0.75,1),colour="grey65",breaks=seq(-8,8,by=1))+
+	geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
 	geom_vline(xintercept=mean(d$Shan_dif),size=0.7,colour="tomato")+
 	xlab("Change in Shannon diversity")+
 	ylab("Frequency")+
@@ -326,13 +326,13 @@ g5<-ggplot(data=d,aes(Shan_dif))+
 	annotate(geom='text',label='D',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g6<-ggplot(data=d,aes(Rich_dif))+
-  geom_histogram(fill=gray(0.75,1),colour="grey65",breaks=seq(-8,8,by=1))+
+  geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-14,8,by=1))+
   geom_vline(xintercept=mean(d$Rich_dif),size=0.7,colour="tomato")+
   xlab("Change in Richness")+
   ylab("Frequency")+
   theme_light()+
   theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
-  scale_x_continuous(breaks=seq(-8,8,by=2))+
+  scale_x_continuous(breaks=seq(-14,8,by=2))+
   annotate(geom='text',label='F',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 if(type!="richness"){
