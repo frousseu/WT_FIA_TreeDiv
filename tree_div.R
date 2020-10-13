@@ -32,12 +32,18 @@ spwt<-names(d)[grep("_WT",names(d))]
 spfia<-names(d)[grep("_FIA",names(d))][-1]
 
 simpson<-function(x){
+  if(!isTRUE(all.equal(1,sum(x),tolerance=1e-05))){
+    stop("Proportions not scaled to 1") 
+  }
   s<-sum(x^2)
   #s/(1-s)
   1/s
 }
 
 shannon<-function(x){
+  if(!isTRUE(all.equal(1,sum(x),tolerance=1e-05))){
+    stop("Proportions not scaled to 1")  
+  }
   s<-x[x>0]
   exp(-sum(s*log(s)))
 }
