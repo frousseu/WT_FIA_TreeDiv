@@ -361,7 +361,7 @@ dev.off()
 ### Bray-Curtis Dissimilarity
 #################################################
 
-d<-read.csv(file.path(path,"tree_div.csv"))
+### d object needs to be taken from what precedes since species proportions are modified in richness method (but not in trees method)
 
 ### species names for each surveys
 fix<-c("_WT","_FIA")
