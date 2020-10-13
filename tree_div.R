@@ -100,9 +100,11 @@ l<-lapply(l,function(i){
       if(w==1){
         spsel<-names(rev(sort(i[,spwt]))[1:n])  
         iwt<-i[,spsel]
+        iwt<-iwt/sum(iwt)
       }else{
         spsel<-names(rev(sort(i[,spfia]))[1:n])
         ifia<-i[,spsel]  
+        ifia<-ifia/sum(ifia)
       }
     }
     i$Shan_fia<-apply(ifia,1,shannon)
