@@ -387,8 +387,8 @@ registerDoParallel(detectCores()-1)
 getDoParWorkers()
 
 ### bootstrap loess curves and difference and generate predictions
-nboot<-200 # 500 in paper 
-nsamp<-5000 #50000 in paper
+nboot<-500 # 500 in paper 
+nsamp<-50000 #50000 in paper
 res<-foreach(i=1:nboot,.packages=c("stats"),.verbose=TRUE) %dopar% {
 	samp<-sample(1:nrow(x),nsamp,replace=TRUE)
 	v<-seq(0,max(x$dist),by=1)
@@ -414,7 +414,7 @@ colsl<-c("dodgerblue4","darkred","black")
 
 ### Figure 2
 ### Dissimilarity
-png(file.path(path,"beta_div.png"),pointsize=9,width=10,height=8,units="in",res=100)
+png(file.path(path,paste0("beta_div_",type,".png")),pointsize=9,width=10,height=8,units="in",res=100)
 par(mar=c(4,4.5,3,3))
 plot(x$dist,x$bc1,pch=16,col=alpha(colsp[1],0.15),cex=0.45,ylim=c(-0.1,1),xlab="",ylab="",axes=FALSE,xlim=c(0,1300),xaxs="i")
 points(x$dist,x$bc2,pch=16,col=alpha(colsp[2],0.15),cex=0.45)
