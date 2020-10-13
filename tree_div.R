@@ -54,6 +54,7 @@ shannon<-function(x){
 
 # Three types of analysis can be ran (full, richness or trees). The type has to be given here and the rest of the script up to the dissimilarity analyses will produce the different figures accordingly.
 type<-"full" # c("full","richness","trees")
+set.seed(1234)
 
 # This part implements the three ways of computing indices
 l<-split(d,1:nrow(d))
@@ -107,10 +108,14 @@ l<-lapply(l,function(i){
         spsel<-names(rev(sort(i[,spwt]))[1:n])  
         iwt<-i[,spsel]
         iwt<-iwt/sum(iwt)
+        i[,setdiff(spwt,spsel)]<-0 # this "erases" species not selected in original data to perform modified beta diversity analysis below 
+        i[,spwt]<-i[,spwt]/sum(i[,spwt])
       }else{
         spsel<-names(rev(sort(i[,spfia]))[1:n])
         ifia<-i[,spsel]  
         ifia<-ifia/sum(ifia)
+        i[,setdiff(spfia,spsel)]<-0 # this "erases" species not selected in original data to perform modified beta diversity analysis below 
+        i[,spfia]<-i[,spfia]/sum(i[,spfia])
       }
     }
     i$Shan_fia<-apply(ifia,1,shannon)
