@@ -36,7 +36,6 @@ simpson<-function(x){
     stop("Proportions not scaled to 1") 
   }
   s<-sum(x^2)
-  #s/(1-s)
   1/s
 }
 
@@ -53,7 +52,7 @@ shannon<-function(x){
 #################################################
 
 # Three types of analysis can be ran (full, richness or trees). The type has to be given here and the rest of the script up to the dissimilarity analyses will produce the different figures accordingly.
-type<-"trees" # c("full","richness","trees")
+type<-"full" # c("full","richness","trees")
 set.seed(1234)
 
 # This part implements the three ways of computing indices
@@ -277,6 +276,15 @@ plot(fitted(m_Rich),resid(m_Rich))
 as.data.frame(summary(m_Shan)$tTable)
 as.data.frame(summary(m_Simp)$tTable)
 as.data.frame(summary(m_Rich)$tTable)
+
+### t.test
+mean(d$Shan_wt)
+mean(d$Shan_fia)
+t.test(d$Shan_wt,d$Shan_fia,paired=TRUE)
+
+mean(d$Simp_wt)
+mean(d$Simp_fia)
+t.test(d$Simp_wt,d$Simp_fia,paired=TRUE)
 
 ### Figure 1
 ### marginal effects and change distributions
