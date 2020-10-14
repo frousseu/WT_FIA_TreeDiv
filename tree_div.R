@@ -53,7 +53,7 @@ shannon<-function(x){
 #################################################
 
 # Three types of analysis can be ran (full, richness or trees). The type has to be given here and the rest of the script up to the dissimilarity analyses will produce the different figures accordingly.
-type<-"full" # c("full","richness","trees")
+type<-"trees" # c("full","richness","trees")
 set.seed(1234)
 
 # This part implements the three ways of computing indices
@@ -154,6 +154,12 @@ scores(env.pca)$species
 biplot(env.pca,display=c("sites","species"),type=c("text","points"))
 d$envPCA1<-scores(env.pca)$sites[,1]
 d$envPCA2<-scores(env.pca)$sites[,2]
+
+### correlate PCA axes with peak_ag
+par(mfrow=c(1,2))
+plot(d$envPCA1,d$peak_ag,main=round(cor(d$envPCA1,d$peak_ag),2))
+plot(d$envPCA2,d$peak_ag,main=round(cor(d$envPCA2,d$peak_ag),2))
+par(mfrow=c(1,1))
 
 ### turn data to spatial object #################
 ds<-d
