@@ -64,6 +64,7 @@ l<-lapply(l,function(i){
   ifia<-i[,spfia]
   i$Rich_wt<-sum(i[,spwt]>0)  
   i$Rich_fia<-sum(i[,spfia]>0)
+  i$Rich_dif<-i$Rich_fia-i$Rich_wt
   if(type=="trees" & (i$Trees_Wit!=i$Trees_FIA)){ # if the same number of trees, no resampling is done
     w<-which.max(c(i$Trees_Wit,i$Trees_FIA))
     n<-min(c(i$Trees_Wit,i$Trees_FIA))
@@ -81,6 +82,8 @@ l<-lapply(l,function(i){
       i$Simp_fia<-apply(ifia,1,simpson)
       i$Simp_wt<-ss[2]
       i$Simp_dif<-i$Simp_fia-i$Simp_wt
+      i$Rich_wt<-ss[3]  
+      i$Rich_dif<-i$Rich_fia-i$Rich_wt
     }else{
       s<-lapply(1:nreps,function(j){
         tab<-table(sample(as.factor(spfia),n,prob=as.vector(ifia),replace=TRUE))
@@ -94,6 +97,8 @@ l<-lapply(l,function(i){
       i$Simp_fia<-ss[2]
       i$Simp_wt<-apply(iwt,1,simpson)
       i$Simp_dif<-i$Simp_fia-i$Simp_wt
+      i$Rich_fia<-ss[3]  
+      i$Rich_dif<-i$Rich_fia-i$Rich_wt
     }
   }else{
     if(type=="richness" & (i$Rich_wt!=i$Rich_fia)){ # if same richness diversity, no resampling is done
@@ -251,6 +256,7 @@ plot(va)
 ### models
 m_Simp<-lme(formula(paste0("Simp_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
 m_Shan<-lme(formula(paste0("Shan_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
+m_Rich<-lme(formula(paste0("Rich_dif~",paste(vs,collapse="+"))),ds@data,random=~1|Ecoregion,correlation=corExp(30000,form=~X+Y,nugget=TRUE))
 
 #plot(ggpredict(m_Shan,terms="peak_ag_sc"),add=TRUE)
 #plot(ggpredict(m_Shan,terms="logratio_sc"),add=TRUE)
@@ -262,8 +268,11 @@ plot(fitted(m_Shan),resid(m_Shan))
 ### model coefficients
 as.data.frame(summary(m_Shan)$tTable)
 as.data.frame(summary(m_Simp)$tTable)
+as.data.frame(summary(m_Rich)$tTable)
 
-### t.test
+### t.test and correlations
+cor(d$Simp_dif,d$Shan_dif)
+
 mean(d$Shan_wt)
 mean(d$Shan_fia)
 t.test(d$Shan_wt,d$Shan_fia,paired=TRUE)
@@ -274,7 +283,7 @@ t.test(d$Simp_wt,d$Simp_fia,paired=TRUE)
 
 ### Figure 1
 ### marginal effects and change distributions
-png(file.path(path,paste0("peak_ag",paste0("_",type),".png")),pointsize=4,width=10,height=8,units="in",res=300)
+png(file.path(path,paste0("peak_ag",paste0("_",type),".png")),pointsize=4,width=10,height=ifelse(type=="trees",12,8),units="in",res=300)
 
 g1<-as.data.frame(ggpredict(m_Simp,terms=c("peak_ag_sc[n=100]")))
 g1[,c("x")]<-(g1[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1] # rescale variables
@@ -288,7 +297,7 @@ g1<-ggplot(g1)+
 	theme_light()+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
-	annotate(geom='text',label='C',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+	annotate(geom='text',label='A',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g2<-as.data.frame(ggpredict(m_Shan,terms=c("peak_ag_sc[n=100]")))
 g2[,c("x")]<-(g2[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
@@ -302,9 +311,23 @@ g2<-ggplot(g2)+
 	theme_light()+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
-	annotate(geom='text',label='D',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+	annotate(geom='text',label='C',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
-g3<-ggplot(data=d,aes(Simp_dif))+
+g3<-as.data.frame(ggpredict(m_Rich,terms=c("peak_ag_sc[n=100]")))
+g3[,c("x")]<-(g3[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
+g3<-ggplot(g3)+
+  geom_hline(yintercept=0,linetype=2,colour=gray(0.2))+
+  geom_point(data=d,aes(peak_ag,Rich_dif),size=1.75,alpha=0.5,colour="green4")+
+  geom_ribbon(aes(x=x,ymin=conf.low,ymax=conf.high),fill=gray(0.5,0.75))+
+  geom_line(aes(x=x,y=predicted),size=1)+
+  xlab("Maximum historical agriculture (proportion)")+
+  ylab("Change in Richness")+
+  theme_light()+
+  theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
+  scale_y_continuous(breaks=seq(-14,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
+  annotate(geom='text',label='E',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+
+g4<-ggplot(data=d,aes(Simp_dif))+
   geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
   geom_vline(xintercept=mean(d$Simp_dif),size=0.7,colour="tomato")+
   xlab("Change in Simpson diversity")+
@@ -312,9 +335,9 @@ g3<-ggplot(data=d,aes(Simp_dif))+
   theme_light()+
   theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
   scale_x_continuous(breaks=seq(-8,8,by=2))+
-  annotate(geom='text',label='A',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+  annotate(geom='text',label='B',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
-g4<-ggplot(data=d,aes(Shan_dif))+
+g5<-ggplot(data=d,aes(Shan_dif))+
 	geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
 	geom_vline(xintercept=mean(d$Shan_dif),size=0.7,colour="tomato")+
 	xlab("Change in Shannon diversity")+
@@ -322,10 +345,24 @@ g4<-ggplot(data=d,aes(Shan_dif))+
 	theme_light()+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_x_continuous(breaks=seq(-8,8,by=2))+
-	annotate(geom='text',label='B',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+	annotate(geom='text',label='D',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
+g6<-ggplot(data=d,aes(Rich_dif))+
+  geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-14,8,by=1))+
+  geom_vline(xintercept=mean(d$Rich_dif),size=0.7,colour="tomato")+
+  xlab("Change in Richness")+
+  ylab("Frequency")+
+  theme_light()+
+  theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
+  scale_x_continuous(breaks=seq(-14,8,by=2))+
+  annotate(geom='text',label='F',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
-grid.arrange(grobs=list(g3,g4,g1,g2),ncol=2)
+if(type=="trees"){
+  grid.arrange(grobs=list(g1,g4,g2,g5,g3,g6),ncol=2)
+  #grid.arrange(grobs=list(g1,g4,g2,g5),ncol=2)
+}else{
+  grid.arrange(grobs=list(g1,g4,g2,g5),ncol=2)
+}
 
 dev.off()
 
