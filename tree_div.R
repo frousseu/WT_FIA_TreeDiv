@@ -234,7 +234,7 @@ ds$Y<-coordinates(ds)[,2]
 ### variable names and scaled variable names
 ds$logratio<-log(ds$Trees_Wit/ds$Trees_FIA)
 if(type=="full"){
-  v<-c("peak_ag","tempdiff_i","N_to_1984_i","Area_SqKM","envPCA1","temp_gdd","logratio")
+  v<-c("peak_ag","tempdiff_i","N_to_1984_i","Area_SqKM","envPCA1","temp_gdd")
 }else{
   v<-c("peak_ag","tempdiff_i","N_to_1984_i","Area_SqKM","envPCA1","temp_gdd")  
 }
