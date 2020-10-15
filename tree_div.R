@@ -281,6 +281,10 @@ mean(d$Simp_wt)
 mean(d$Simp_fia)
 t.test(d$Simp_wt,d$Simp_fia,paired=TRUE)
 
+mean(d$Rich_wt)
+mean(d$Rich_fia)
+t.test(d$Rich_wt,d$Rich_fia,paired=TRUE)
+
 ### Figure 1
 ### marginal effects and change distributions
 png(file.path(path,paste0("peak_ag",paste0("_",type),".png")),pointsize=4,width=10,height=ifelse(type=="trees",12,8),units="in",res=300)
