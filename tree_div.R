@@ -301,7 +301,7 @@ g1<-ggplot(g1)+
 	theme_light()+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
-	annotate(geom='text',label='A',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+	annotate(geom='text',label='C',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g2<-as.data.frame(ggpredict(m_Shan,terms=c("peak_ag_sc[n=100]")))
 g2[,c("x")]<-(g2[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
@@ -315,7 +315,7 @@ g2<-ggplot(g2)+
 	theme_light()+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_y_continuous(breaks=seq(-8,8,by=2))+scale_x_continuous(breaks=seq(0,1,by=0.2))+
-	annotate(geom='text',label='C',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+	annotate(geom='text',label='A',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g3<-as.data.frame(ggpredict(m_Rich,terms=c("peak_ag_sc[n=100]")))
 g3[,c("x")]<-(g3[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
@@ -339,7 +339,7 @@ g4<-ggplot(data=d,aes(Simp_dif))+
   theme_light()+
   theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
   scale_x_continuous(breaks=seq(-8,8,by=2))+
-  annotate(geom='text',label='B',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+  annotate(geom='text',label='D',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g5<-ggplot(data=d,aes(Shan_dif))+
 	geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
@@ -349,7 +349,7 @@ g5<-ggplot(data=d,aes(Shan_dif))+
 	theme_light()+
 	theme(axis.text=element_text(size=rel(1.25)),axis.title=element_text(size=rel(1.25)),panel.grid=element_blank(),plot.margin=unit(rep(0.5,4),"cm"),panel.border = element_rect(colour=gray(0.15), fill = NA))+
 	scale_x_continuous(breaks=seq(-8,8,by=2))+
-	annotate(geom='text',label='D',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
+	annotate(geom='text',label='B',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 g6<-ggplot(data=d,aes(Rich_dif))+
   geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-14,8,by=1))+
@@ -362,10 +362,10 @@ g6<-ggplot(data=d,aes(Rich_dif))+
   annotate(geom='text',label='F',x=-Inf,y=Inf,hjust=-0.6,vjust=1.4,size=8)
 
 if(type=="trees"){
-  grid.arrange(grobs=list(g1,g4,g2,g5,g3,g6),ncol=2)
-  #grid.arrange(grobs=list(g1,g4,g2,g5),ncol=2)
+  grid.arrange(grobs=list(g2,g5,g1,g4,g3,g6),ncol=2)
+  #grid.arrange(grobs=list(g2,g5,g1,g4),ncol=2)
 }else{
-  grid.arrange(grobs=list(g1,g4,g2,g5),ncol=2)
+  grid.arrange(grobs=list(g2,g5,g1,g4),ncol=2)
 }
 
 dev.off()
