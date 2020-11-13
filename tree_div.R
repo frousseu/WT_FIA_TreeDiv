@@ -140,6 +140,34 @@ png(file.path(path,"div_logratio_peak_ag.png"),pointsize=4,width=10,height=8,uni
 wrap_plots(gg1,gg2,gg3)
 dev.off()
 
+
+#################################################
+### averages and wt fia comparison ##############
+#################################################
+
+### means #######################################
+v<-c("FIA_Plots","Trees_FIA","Trees_Wit")
+li<-list(
+  apply(d[,v],2,mean),
+  apply(d[,v],2,sd),
+  apply(d[,v],2,min),
+  apply(d[,v],2,max)
+)
+means<-t(do.call("rbind",li))
+colnames(means)<-c("mean","sd","min","max")
+means
+
+### scatterplot #################################
+
+par(mfrow=c(1,2))
+lim<-c(30,max(c(d[,"Trees_Wit"],d[,"Trees_FIA"])))
+plot(d[,"Trees_Wit"],d[,"Trees_FIA"],xlim=lim,ylim=lim,xlab="Number of trees, historical",ylab="Number of trees, contemporary",pch=16,col=gray(0,0.15),asp=1,log="xy")
+abline(0,1)
+lim<-c(2,max(c(d[,"Rich_wt"],d[,"Rich_fia"])))
+plot(jitter(d[,"Rich_wt"],amount=0.25),jitter(d[,"Rich_fia"],amount=0.25),xlim=lim,ylim=lim,xlab="Historical richness",ylab="Contemporary richness",pch=16,col=gray(0,0.15),asp=1)
+abline(0,1)
+
+
 #################################################
 ### Load other environmental variables ##########
 #################################################
