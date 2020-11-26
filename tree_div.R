@@ -17,7 +17,8 @@ library(patchwork)
 # make sure all files in the data folder are in your chosen working directory
 path<-getwd()
 #path<-"C:/Users/User/Documents/GitHub/WT_FIA_TreeDiv/data"
-path<-"C:/Users/rouf1703/Documents/UdeS/GitHub/WT_FIA_TreeDiv/data"
+#path<-"C:/Users/rouf1703/Documents/UdeS/GitHub/WT_FIA_TreeDiv/data"
+path<-"../WT_FIA_TreeDiv/data"
 
 
 #################################################
@@ -315,13 +316,17 @@ t.test(d$Rich_wt,d$Rich_fia,paired=TRUE)
 
 ### Figure 1
 ### marginal effects and change distributions
-png(file.path(path,paste0("peak_ag",paste0("_",type),".png")),pointsize=4,width=10,height=ifelse(type=="trees",12,8),units="in",res=300)
+#pdf(file.path(path,paste0("peak_ag",paste0("_",type),".pdf")),pointsize=4,width=10,height=ifelse(type=="trees",12,8))#,units="in",res=300)
+tiff(file.path(path,paste0("peak_ag",paste0("_",type),".tif")),pointsize=4,width=10,height=ifelse(type=="trees",12,8),units="in",res=300)
+
+colpoints<-"black"
+collines<-"black"	
 
 g1<-as.data.frame(ggpredict(m_Simp,terms=c("peak_ag_sc[n=100]")))
 g1[,c("x")]<-(g1[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1] # rescale variables
 g1<-ggplot(g1)+
 	geom_hline(yintercept=0,linetype=2,colour=gray(0.2))+
-	geom_point(data=d,aes(peak_ag,Simp_dif),size=1.75,alpha=0.5,colour="green4")+
+	geom_point(data=d,aes(peak_ag,Simp_dif),size=1.75,alpha=0.35,colour=colpoints)+
 	geom_ribbon(aes(x=x,ymin=conf.low,ymax=conf.high),fill=gray(0.5,0.75))+
 	geom_line(aes(x=x,y=predicted),size=1)+
 	xlab("Maximum historical agriculture (proportion)")+
@@ -335,7 +340,7 @@ g2<-as.data.frame(ggpredict(m_Shan,terms=c("peak_ag_sc[n=100]")))
 g2[,c("x")]<-(g2[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
 g2<-ggplot(g2)+
 	geom_hline(yintercept=0,linetype=2,colour=gray(0.2))+
-	geom_point(data=d,aes(peak_ag,Shan_dif),size=1.75,alpha=0.5,colour="green4")+
+	geom_point(data=d,aes(peak_ag,Shan_dif),size=1.75,alpha=0.35,colour=colpoints)+
 	geom_ribbon(aes(x=x,ymin=conf.low,ymax=conf.high),fill=gray(0.5,0.75))+
 	geom_line(aes(x=x,y=predicted),size=1)+
 	xlab("Maximum historical agriculture (proportion)")+
@@ -349,7 +354,7 @@ g3<-as.data.frame(ggpredict(m_Rich,terms=c("peak_ag_sc[n=100]")))
 g3[,c("x")]<-(g3[,c("x")]*s[["peak_ag"]][2])+s[["peak_ag"]][1]
 g3<-ggplot(g3)+
   geom_hline(yintercept=0,linetype=2,colour=gray(0.2))+
-  geom_point(data=d,aes(peak_ag,Rich_dif),size=1.75,alpha=0.5,colour="green4")+
+  geom_point(data=d,aes(peak_ag,Rich_dif),size=1.75,alpha=0.35,colour=colpoints)+
   geom_ribbon(aes(x=x,ymin=conf.low,ymax=conf.high),fill=gray(0.5,0.75))+
   geom_line(aes(x=x,y=predicted),size=1)+
   xlab("Maximum historical agriculture (proportion)")+
@@ -361,7 +366,7 @@ g3<-ggplot(g3)+
 
 g4<-ggplot(data=d,aes(Simp_dif))+
   geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
-  geom_vline(xintercept=mean(d$Simp_dif),size=0.7,colour="tomato")+
+  geom_vline(xintercept=mean(d$Simp_dif),size=0.7,colour=collines)+
   xlab("Change in Simpson diversity")+
   ylab("Frequency")+
   theme_light()+
@@ -371,7 +376,7 @@ g4<-ggplot(data=d,aes(Simp_dif))+
 
 g5<-ggplot(data=d,aes(Shan_dif))+
 	geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-8,8,by=1))+
-	geom_vline(xintercept=mean(d$Shan_dif),size=0.7,colour="tomato")+
+	geom_vline(xintercept=mean(d$Shan_dif),size=0.7,colour=collines)+
 	xlab("Change in Shannon diversity")+
 	ylab("Frequency")+
 	theme_light()+
@@ -381,7 +386,7 @@ g5<-ggplot(data=d,aes(Shan_dif))+
 
 g6<-ggplot(data=d,aes(Rich_dif))+
   geom_histogram(fill=gray(0.75,1),colour="white",breaks=seq(-14,8,by=1))+
-  geom_vline(xintercept=mean(d$Rich_dif),size=0.7,colour="tomato")+
+  geom_vline(xintercept=mean(d$Rich_dif),size=0.7,colour=collines)+
   xlab("Change in Richness")+
   ylab("Frequency")+
   theme_light()+
@@ -429,8 +434,8 @@ registerDoParallel(detectCores()-1)
 getDoParWorkers()
 
 ### bootstrap loess curves and difference and generate predictions
-nboot<-500 # 500 in paper 
-nsamp<-50000 #50000 in paper
+nboot<-100 # 500 in paper 
+nsamp<-5000 #50000 in paper
 res<-foreach(i=1:nboot,.packages=c("stats"),.verbose=TRUE) %dopar% {
 	samp<-sample(1:nrow(x),nsamp,replace=TRUE)
 	v<-seq(0,max(x$dist),by=1)
@@ -450,13 +455,20 @@ ci1<-t(apply(val1,1,function(i){quantile(i,c(0.025,0.975),na.rm=TRUE)}))
 ci2<-t(apply(val2,1,function(i){quantile(i,c(0.025,0.975),na.rm=TRUE)}))
 
 ### colors
-colsp<-c("dodgerblue3","tomato","black")
-colsl<-c("dodgerblue4","darkred","black")
+#colsp<-c("dodgerblue3","tomato","black")
+#colsl<-c("dodgerblue4","darkred","black")
+#lty<-c(1,1,1)
+
+colsp<-c("grey30","grey70","black")
+colsl<-c("grey10","grey50","grey50")
+lty<-c(1,1,3)
 
 
 ### Figure 2
 ### Dissimilarity
-png(file.path(path,paste0("beta_div_",type,".png")),pointsize=9,width=10,height=8,units="in",res=100)
+#png(file.path(path,paste0("beta_div_",type,".png")),pointsize=9,width=10,height=8,units="in",res=100)
+#pdf(file.path(path,paste0("beta_div_",type,".pdf")),pointsize=9,width=10,height=8)#,units="in",res=100)
+tiff(file.path(path,paste0("beta_div_",type,".tif")),pointsize=9,width=10,height=8,units="in",res=100)
 par(mar=c(4,4.5,3,3))
 plot(x$dist,x$bc1,pch=16,col=alpha(colsp[1],0.15),cex=0.45,ylim=c(-0.1,1),xlab="",ylab="",axes=FALSE,xlim=c(0,1300),xaxs="i")
 points(x$dist,x$bc2,pch=16,col=alpha(colsp[2],0.15),cex=0.45)
@@ -471,11 +483,11 @@ v<-seq(0,max(x$dist),by=1)
 
 pol1<-na.omit(cbind(c(v,rev(v),v[1]),c(ci1[,1],rev(ci1[,2]),ci1[,1][1])))
 polygon(pol1,col=alpha(colsl[1],0.5),border=NA)
-lines(v,rowMeans(val1,na.rm=TRUE),col=colsl[1],lwd=2)
+lines(v,rowMeans(val1,na.rm=TRUE),col=colsl[1],lty=lty[1],lwd=2)
 
 pol2<-na.omit(cbind(c(v,rev(v),v[1]),c(ci2[,1],rev(ci2[,2]),ci2[,1][1])))
 polygon(pol2,col=alpha(colsl[2],0.5),border=NA)
-lines(v,rowMeans(val2,na.rm=TRUE),col=colsl[2],lwd=2)
+lines(v,rowMeans(val2,na.rm=TRUE),col=colsl[2],lty=lty[2],lwd=2)
 
 ### difference
 dif<-do.call("cbind",lapply(res,function(i){i[,2]-i[,1]}))
@@ -483,15 +495,15 @@ ci<-t(apply(dif,1,function(i){quantile(i,c(0.025,0.975),na.rm=TRUE)}))
 
 pol<-na.omit(cbind(c(v,rev(v),v[1]),c(ci[,1],rev(ci[,2]),ci[,1][1])))
 polygon(pol,col=alpha(colsp[3],0.25),border=NA,xpd=TRUE)
-lines(v,rowMeans(dif,na.rm=TRUE),col=colsl[3],lwd=2,xpd=TRUE)
+lines(v,rowMeans(dif,na.rm=TRUE),col=colsl[3],lwd=2,lty=lty[3],lend=2,xpd=TRUE)
 
 abline(0,0,lty=2,col=acol)
 
 lx<-rep(600,3)
 ly<-0.15-(0:2)*0.05
-points(lx,ly,pch=15,col=alpha(colsl,c(0.5,0.5,0.25)),cex=3)
+points(lx,ly,pch=15,col=alpha(colsp,c(0.5,0.5,0.25)),cex=3)
 w<-9
-segments(lx-w,ly,x1=lx+w,y1=ly,col=colsl,lwd=2,lend=2)
+segments(lx-w,ly,x1=lx+w,y1=ly,col=colsl,lwd=2,lend=2,lty=lty)
 text(lx+20,ly,labels=c("Historical","Contemporary","Difference (Contemporary - Historical)"),adj=c(0,0.5),cex=2)
 dev.off()
 
